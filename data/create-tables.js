@@ -15,8 +15,7 @@ async function run() {
             );
         
             CREATE TABLE favorites (
-                id VARCHAR(64) PRIMARY KEY,
-                -- your data columns
+                id VARCHAR(64) PRIMARY KEY
             );
         `);
 
