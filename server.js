@@ -67,6 +67,25 @@ app.get('/api/me/favorites', async (req, res) => {
     }
 });
 
+
+app.delete('/api/me/favorites/:id', async (req, res) => {
+    try {
+        const myQuery = `
+            DELETE FROM favorites
+            WHERE id=$1
+            RETURNING *
+        `;
+        
+        const favorites = await client.query(myQuery, [req.params.id]);
+        
+        res.json(favorites.rows);
+
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+
 app.post('/api/me/favorites', async(req, res) => {
     try {
         const {
