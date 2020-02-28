@@ -49,12 +49,58 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 
 // everything that starts with "/api" below here requires an auth token!
-app.use('/api', ensureAuth);
+app.use('/api/me', ensureAuth);
+
+app.get('/api/me/favorites', async (req, res) => {
+    try {
+        const myQuery = `
+            SELECT * FROM favorites
+            WHERE user_id=$1
+        `;
+        
+        const favorites = await client.query(myQuery, [req.userId]);
+        
+        res.json(favorites.rows);
+
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+app.post('/api/me/favorites', async(req, res) => {
+    try {
+        const {
+            name,
+            weight,
+            eye_color,
+        } = req.body;
+
+        const newFavorites = await client.query(`
+            INSERT INTO favorites (name, weight, eye_color, user_id)
+            values ($1, $2, $3, $4)
+            returning *
+        `, [
+            name, 
+            weight, 
+            eye_color, 
+            req.userId,
+        ]);
+
+        res.json(newFavorites.rows[0]);
+
+    } catch (e) {
+        console.error(e);
+    }
+});
 
 app.get('/api/swapi', async (req, res) => {
-    const data = await request.get(`https://swapi.co/api/people/?search=${req.query.search}`);
-
-    res.json(data.body);
+    try {
+        const data = await request.get(`https://swapi.co/api/people/?search=${req.query.search}`);
+    
+        res.json(data.body);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
 app.listen(process.env.PORT, () => {
